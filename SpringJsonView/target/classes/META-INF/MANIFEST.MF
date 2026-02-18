@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Built-By: kapilsharma05
+Build-Jdk: 21.0.9
+Implementation-Title: SpringJsonView
+Implementation-Version: 0.0.1
+Implementation-Vendor-Id: com.javasampleapproach.jackson
+Implementation-Vendor: Pivotal Software, Inc.
+Implementation-URL: http://projects.spring.io/spring-boot/JacksonJsonVie
+ w/
+Created-By: Maven Integration for Eclipse
+

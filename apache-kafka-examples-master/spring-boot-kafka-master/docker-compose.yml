@@ -1,0 +1,74 @@
+version: "3.8"
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - kafka-network
+    #volumes:
+    #  - zookeeper-data:/var/lib/zookeeper  # Persist Zookeeper data
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: broker
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      # Kafka Broker configuration
+      KAFKA_BROKER_ID: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # Enable topic deletion
+      KAFKA_DELETE_TOPIC_ENABLE: "true"
+      # Listener configuration
+      KAFKA_LISTENER_SECURITY_PROTOCOL: PLAINTEXT
+      KAFKA_LISTENER_PORT: 9092
+      # Advertised Listener (access from outside the container)
+      KAFKA_ADVERTISED_LISTENERS: INSIDE_KAFKA://localhost:9092   # For Windows/macOS
+      # Internal listener within Docker network
+      KAFKA_LISTENER_NAME_INSIDE: INSIDE_KAFKA
+      KAFKA_LISTENER_INSIDE: INSIDE_KAFKA://broker:9092
+
+      # Map the INSIDE_KAFKA listener to PLAINTEXT security protocol
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE_KAFKA:PLAINTEXT
+
+      # Specify the inter-broker listener name to match the internal listener name
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE_KAFKA  # This line was added to fix the error
+      
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      
+    networks:
+      - kafka-network
+   # volumes:
+    #  - kafka-data:/var/lib/kafka/data  # Persist Kafka data
+
+  kafka-application:
+    build:
+     context: ./
+     dockerfile: Dockerfile
+    container_name: kafka-application
+    networks:
+     - kafka-network
+    ports:
+     - "9000:9000"  # Expose the Spring Boot app (frontend)
+    depends_on:
+     - kafka
+
+volumes:
+  zookeeper-data:
+  kafka-data:
+
+networks:
+  kafka-network:
+    driver: bridge

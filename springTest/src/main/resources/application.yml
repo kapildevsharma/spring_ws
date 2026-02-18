@@ -1,0 +1,5 @@
+# HTTP (Tomcat) port
+logging:
+  level:
+    root: INFO
+  file.path: D:/kapil/log/
